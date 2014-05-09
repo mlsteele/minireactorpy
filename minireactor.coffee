@@ -5,10 +5,8 @@ class MiniReactor
     @queue = []
 
   get: (key) ->
-    console.log "get(#{key})"
-
     if @active_fn?
-      @values[key].dependents.push @active_fn
+      @values[key].dependents[@active_fn] = @active_fn
 
     if key of @values
       @values[key].val
@@ -16,14 +14,12 @@ class MiniReactor
       undefined
 
   set: (key, val) ->
-    console.log "set(#{key}, #{val})"
-
     @values[key] =
       val: val
       dependents: @values[key]?.dependents or []
 
-    for dep in @values[key].dependents
-      @queue.push dep
+    for depkey of @values[key].dependents
+      @queue.push @values[key].dependents[depkey]
 
     return this
 
@@ -36,19 +32,25 @@ class MiniReactor
       @autorun @queue.shift()
 
 
+
 ctx = new MiniReactor()
 
 ctx.autorun ->
   ctx.set 'foo', 2
+  ctx.set 'bar', 0
 
 ctx.autorun ->
   console.log "foo is now #{ctx.get 'foo'}"
 
 ctx.autorun ->
+  console.log "bar is now #{ctx.get 'bar'}"
+
+ctx.autorun ->
   ctx.set 'foo', 3
+  ctx.set 'bar', 5
 
 ctx.autorun ->
   ctx.set 'foo', 4
 
-console.log ctx.values
-console.log ctx.functions
+# console.log ctx.values
+# console.log ctx.functions
