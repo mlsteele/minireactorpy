@@ -1,25 +1,45 @@
+# Set implementation that is not efficient
+# but does support functions as elements.
+# This exists to solve the problem whereby functions hash to strings.
+class SlowSet
+  constructor: (list) ->
+    @elements = []
+    if list? then @add e for e in list
+
+  add: (e) ->
+    @elements.push e unless e in @elements
+
+  contains: (e) -> e in @elements
+
+  size: -> @elements.length
+
+
+# Reactive context.
 class MiniReactor
   constructor: ->
     # mapping from stored values -> their values and dependents
     @values = {}
+    # queue of functions waiting to be run
     @queue = []
 
   get: (key) ->
     if @active_fn?
-      @values[key].dependents[@active_fn] = @active_fn
+      @values[key].dependents.add @active_fn
 
     if key of @values
       @values[key].val
     else
       undefined
 
+  # key should be a string, anything else will be converted to a string
+  # val can be anything
   set: (key, val) ->
     @values[key] =
       val: val
-      dependents: @values[key]?.dependents or []
+      dependents: @values[key]?.dependents or new SlowSet
 
-    for depkey of @values[key].dependents
-      @queue.push @values[key].dependents[depkey]
+    for fn in @values[key].dependents.elements
+      @queue.push fn
 
     return this
 
