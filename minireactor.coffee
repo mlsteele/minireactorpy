@@ -56,21 +56,24 @@ class MiniReactor
 ctx = new MiniReactor()
 
 ctx.autorun ->
-  ctx.set 'foo', 2
-  ctx.set 'bar', 0
+  ctx.set 'frobnitz', 2
+  ctx.set 'dingle-arm', true
 
 ctx.autorun ->
-  console.log "foo is now #{ctx.get 'foo'}"
+  console.log "frobnitz is set to #{ctx.get 'frobnitz'}"
 
 ctx.autorun ->
-  console.log "bar is now #{ctx.get 'bar'}"
+  if ctx.get 'dingle-arm'
+    console.log "watch out for the dingle-arm"
+  else
+    console.log "dingle-arm disengaged"
 
 ctx.autorun ->
-  ctx.set 'foo', 3
-  ctx.set 'bar', 5
+  ctx.set 'frobnitz', 3
+  ctx.set 'dingle-arm', false
 
 ctx.autorun ->
-  ctx.set 'foo', 4
+  ctx.set 'frobnitz', 4
 
 # console.log ctx.values
 # console.log ctx.functions
