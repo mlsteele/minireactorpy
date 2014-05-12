@@ -41,6 +41,9 @@ class MiniReactor
     for fn in @values[key].dependents.elements
       @queue.push fn
 
+    if not @active_fn?
+      @autorun (->)
+
     return this
 
   autorun: (fn) ->
@@ -55,9 +58,8 @@ class MiniReactor
 
 ctx = new MiniReactor()
 
-ctx.autorun ->
-  ctx.set 'frobnitz', 2
-  ctx.set 'dingle-arm', true
+ctx.set 'frobnitz', 2
+ctx.set 'dingle-arm', true
 
 ctx.autorun ->
   console.log "frobnitz is set to #{ctx.get 'frobnitz'}"
@@ -72,8 +74,7 @@ ctx.autorun ->
   ctx.set 'frobnitz', 3
   ctx.set 'dingle-arm', false
 
-ctx.autorun ->
-  ctx.set 'frobnitz', 4
+ctx.set 'frobnitz', 4
 
 # console.log ctx.values
 # console.log ctx.functions
