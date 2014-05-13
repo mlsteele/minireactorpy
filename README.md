@@ -8,43 +8,57 @@ python minireactor.py
 ## Example Usage
 
 ```python
+import time
+from minireactor import MiniReactor
+
 # create a new reactive context
 ctx = MiniReactor()
 
-# store initial values for 'frobnitz' and 'dingle-arm'
-ctx.set('frobnitz', 2)
-ctx.set('dingle-arm', True)
+# store initial values for 'location' and 'start_date'
+ctx.set('location', 'texas')
+ctx.set('start_date', 1399993421)
 
-# teach it how to render 'frobnitz'
+# teach it how to render 'location'
 # this will happen once right now
-# this will also happen whenever the value of 'frobnitz' is changed
+# this will also happen whenever the value of 'location' is changed
 @ctx.autorun
-def render_frobnitz():
-  print "frobnitz is set to {}".format(ctx.get('frobnitz'))
+def render_location():
+  location_str = ctx.get('location').title()
+  print "location is set to {}".format(location_str)
 
-# teach it how to render 'dingle-arm'
+# teach it about the dependency of 'end_date' on 'start_date'
 @ctx.autorun
-def render_dinglearm():
-  if ctx.get('dingle-arm'):
-    print "watch out for the dingle-arm"
-  else:
-    print "dingle-arm disengaged"
+def sync_dates():
+  one_week = 604800 # in seconds
+  ctx.set('end_date', ctx.get('start_date') + one_week)
 
-# set some new values for 'frobnitz' and 'dingle-arm'
+# teach it how to render 'start_date' and 'end_date'
+@ctx.autorun
+def render_dates():
+  start_date_str = time.ctime(ctx.get('start_date'))
+  end_date_str = time.ctime(ctx.get('end_date'))
+  print "departure: {}".format(start_date_str)
+  print "return   : {}".format(end_date_str)
+
+# set some new values for 'location' and 'start_date'
 @ctx.autorun
 def set_things():
-  ctx.set('frobnitz', 3)
-  ctx.set('dingle-arm', False)
+  ctx.set('location', 'maine')
+  ctx.set('start_date', 1400993421)
 
-# set a new value for 'frobnitz'
+# set a new value for 'location'
 # set's do not have to be run inside 'autorun' blocks
-ctx.set('frobnitz', 4)
+ctx.set('location', 'california')
 ```
 
 ```
-frobnitz is set to 2
-watch out for the dingle-arm
-frobnitz is set to 3
-dingle-arm disengaged
-frobnitz is set to 4
+location is set to Texas
+departure: Tue May 13 11:03:41 2014
+return   : Tue May 20 11:03:41 2014
+location is set to Maine
+departure: Sun May 25 00:50:21 2014
+return   : Tue May 20 11:03:41 2014
+departure: Sun May 25 00:50:21 2014
+return   : Sun Jun  1 00:50:21 2014
+location is set to California
 ```
