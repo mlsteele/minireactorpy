@@ -59,45 +59,65 @@ class MiniReactor(object):
       self.autorun(self.queue.popleft())
 
 
+class SugarReactor(object):
+  """
+  Wraps a MiniReactor so that it can be used
+  with more syntactic niceties.
+  """
+  def __init__(self):
+    # hide the reactor away in a name with dashes
+    # because dot-accesses can't have dashes
+    self.__dict__['data-store'] = MiniReactor()
+
+  def __getattr__(self, key):
+    return self.__dict__['data-store'].get(key)
+
+  def __setattr__(self, key, value):
+    self.__dict__['data-store'].set(key, value)
+
+  def __call__(self, fn):
+    self.__dict__['data-store'].autorun(fn)
+
+
 if __name__ == "__main__":
   """Usage Example"""
   import time
 
   # create a new reactive context
-  ctx = MiniReactor()
+  ctx = SugarReactor()
 
   # store initial values for 'location' and 'start_date'
-  ctx.set('location', 'texas')
-  ctx.set('start_date', 1399993421)
+  ctx.location = 'texas'
+  ctx.start_date = 1399993421
 
   # teach it how to render 'location'
   # this will happen once right now
   # this will also happen whenever the value of 'location' is changed
-  @ctx.autorun
+  @ctx
   def render_location():
-    location_str = ctx.get('location').title()
+    location_str = ctx.location.title()
     print "location is set to {}".format(location_str)
 
   # teach it about the dependency of 'end_date' on 'start_date'
-  @ctx.autorun
+  @ctx
   def sync_dates():
     one_week = 604800 # in seconds
-    ctx.set('end_date', ctx.get('start_date') + one_week)
+    ctx.end_date = ctx.start_date + one_week
 
   # teach it how to render 'start_date' and 'end_date'
-  @ctx.autorun
+  @ctx
   def render_dates():
-    start_date_str = time.ctime(ctx.get('start_date'))
-    end_date_str = time.ctime(ctx.get('end_date'))
+    start_date_str = time.ctime(ctx.start_date)
+    end_date_str = time.ctime(ctx.end_date)
     print "departure: {}".format(start_date_str)
     print "return   : {}".format(end_date_str)
 
   # set some new values for 'location' and 'start_date'
-  @ctx.autorun
+  @ctx
   def set_things():
-    ctx.set('location', 'maine')
-    ctx.set('start_date', 1400993421)
+    ctx.location = 'maine'
+    ctx.start_date = 1400993421
 
   # set a new value for 'location'
   # set's do not have to be run inside 'autorun' blocks
-  ctx.set('location', 'california')
+  ctx.location = 'california'
